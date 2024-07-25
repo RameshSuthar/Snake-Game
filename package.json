@@ -1,8 +1,8 @@
 {
   "name": "snake-game",
   "version": "0.1.0",
-  "private": true,
-  "homepage": "https://rameshsuthar.github.io/Snake-Game/",
+  "private": false,
+  "homepage": ".",
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
