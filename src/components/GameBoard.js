@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { increaseSnake, INCREMENT_SCORE, makeMove, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, resetGame, RESET_SCORE, scoreUpdates, stopGame, setDisDirection } from "../store/actions";
-import { clearBoard, drawObject, generateRandomPosition, hasSnakeCollided, generateRandomSnake } from "../utils";
+import { clearBoard, drawObject, generateRandomPosition, hasSnakeCollided, generateRandomSnake, hasHitBoundary } from "../utils";
 import Instruction from "./Instructions";
 
 const SNAKE_COLOR = "#446ceb";
-const MINIMUM_SNAKE_SIZE = 50;
+const MINIMUM_SNAKE_SIZE = 40;
 let CURR_INTERVAL_TIMER_ID = null;
 
 const GameBoard = ({ rows = 20, columns = 20, minimalBoxSize = 20, numOfGrabs = 2, initialSnakeSpeed = 200, speedIncrement = 20 }) => {
@@ -101,20 +101,13 @@ const GameBoard = ({ rows = 20, columns = 20, minimalBoxSize = 20, numOfGrabs = 
       foodEaten();
     }
 
-    if (
-      hasSnakeCollided(currSnake, currSnake[0]) ||
-      currSnake[0].x >= width ||
-      currSnake[0].x <= 0 ||
-      currSnake[0].y <= 0 ||
-      currSnake[0].y >= height
-    ) {
+    if (hasSnakeCollided(currSnake, currSnake[0]) || hasHitBoundary(currSnake, getCurrentDirection(disallowedDirection), width, height, minimalBoxSize)) {
       setGameEnded(true);
       dispatch(stopGame());
       window.removeEventListener("keydown", handleKeydownEvents);
-      // clear the setInterval timer id.
-      clearInterval(CURR_INTERVAL_TIMER_ID);
+      clearInterval(CURR_INTERVAL_TIMER_ID); // clear the setInterval timer id.
     } else setGameEnded(false);
-  }, [context, food, currSnake, height, width, handleKeydownEvents, dispatch]);
+  }, [context, food, currSnake, height, width, dispatch]);
 
   // Attach the keydown event listener to the window.
   useEffect(() => {
@@ -123,7 +116,7 @@ const GameBoard = ({ rows = 20, columns = 20, minimalBoxSize = 20, numOfGrabs = 
     return () => {
       window.removeEventListener("keydown", handleKeydownEvents);
     };
-  }, [disallowedDirection, handleKeydownEvents, snakeSpeed, gameEnded]);
+  }, [disallowedDirection, snakeSpeed, gameEnded]);
 
   /**
    * @description Function to get the current direction of the snake.
@@ -274,11 +267,15 @@ const GameBoard = ({ rows = 20, columns = 20, minimalBoxSize = 20, numOfGrabs = 
       pauseGame();
       resumeGame();
     }
-  }, [snakeSpeed])
+  }, [snakeSpeed]);
+
+  const status = useMemo(() => {
+    return gameEnded ? "Game Over" : (CURR_INTERVAL_TIMER_ID === null ? "Paused" : "Playing");
+  }, [gameEnded, CURR_INTERVAL_TIMER_ID]);
 
   return (
     <>
-      <Instruction resetBoard={resetBoard} pauseGame={pauseGame} resumeGame={resumeGame} snakeSpeed={snakeSpeed}/>
+      <Instruction resetBoard={resetBoard} pauseGame={pauseGame} resumeGame={resumeGame} snakeSpeed={snakeSpeed} status={status}/>
       <canvas
         ref={canvasRef}
         style={{border: `3px solid ${gameEnded ? "red" : "black"}`}}
