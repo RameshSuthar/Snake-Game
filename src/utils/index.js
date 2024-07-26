@@ -1,9 +1,23 @@
+/**
+ * Clears the entire canvas.
+ * @param {CanvasRenderingContext2D} context - The 2D rendering context for the drawing surface of the canvas element.
+ * @param {number} width - The width of the canvas.
+ * @param {number} height - The height of the canvas.
+ */
 export const clearBoard = (context, width, height) => {
   if (context) {
     context.clearRect(0, 0, width, height);
   }
 };
 
+/**
+ * Draws an object on the canvas.
+ * @param {CanvasRenderingContext2D} context - The 2D rendering context for the drawing surface of the canvas element.
+ * @param {Array} objectBody - An array of segments representing the object's body, where each segment has x and y properties.
+ * @param {string} fillColor - The fill color for the object.
+ * @param {number} minimalBoxSize - The size of each box in the object.
+ * @param {string} [strokeStyle="#2f2b2b"] - The stroke color for the object's border. Default is "#2f2b2b".
+ */
 export const drawObject = (
   context,
   objectBody,
@@ -21,18 +35,47 @@ export const drawObject = (
   }
 };
 
+/**
+ * Generates a random number between min and max that is a multiple of minimalBoxSize.
+ * @param {number} min - The minimum value for the random number (inclusive).
+ * @param {number} max - The maximum value for the random number (inclusive).
+ * @param {number} minimalBoxSize - The step size for the random number, ensuring it aligns with the grid.
+ * @returns {number} - A random number between min and max that is a multiple of minimalBoxSize.
+ */
+
 function randomNumber(min, max, minimalBoxSize) {
   let random = Math.random() * max;
   return random - (random % minimalBoxSize);
 }
 
-export const generateRandomPosition = (width, height, minimalBoxSize) => {
-  return {
-    x: randomNumber(0, width, minimalBoxSize),
-    y: randomNumber(0, height, minimalBoxSize),
-  };
+/**
+ * Generates a random position within the canvas boundaries.
+ * Ensures that the position does not overlap with any segment of the snake.
+ * @param {number} width - The width of the canvas.
+ * @param {number} height - The height of the canvas.
+ * @param {number} minimalBoxSize - The size of each box.
+ * @param {Array} snake - The snake's body, an array of segments with x and y properties.
+ * @returns {Object} - An object representing the random position with x and y properties.
+ */
+export const generateRandomPosition = (width, height, minimalBoxSize, snake = [{x: - 1, y: - 1}]) => {
+  let position;
+
+  do {
+    position = {
+      x: randomNumber(0, width - minimalBoxSize, minimalBoxSize),
+      y: randomNumber(0, height - minimalBoxSize, minimalBoxSize),
+    };
+  } while (snake.some(segment => segment.x === position.x && segment.y === position.y));
+
+  return position;
 };
 
+/**
+ * Check if the snake has collided with itself.
+ * @param {Array} snake - The snake's body, an array of segments with x and y properties.
+ * @param {Object} currentHeadPos - The current head position of the snake with x and y properties
+ * @returns 
+ */
 export const hasSnakeCollided = (
   snake,
   currentHeadPos
@@ -51,35 +94,34 @@ export const hasSnakeCollided = (
   return flag;
 };
 
-export const getDefaultSnakePosition = () => {
-  return [
-    { x: 560, y: 300 },
-    { x: 540, y: 300 },
-    { x: 520, y: 300 },
-    { x: 500, y: 300 },
-  ];
-}
-
 /**
  * Generates a random snake position within the canvas boundaries with a margin.
  * The snake will have a length of 4 boxes and will be positioned horizontally.
  * @param {number} width - The width of the canvas.
  * @param {number} height - The height of the canvas.
  * @param {number} minimalBoxSize - The size of each box in the snake.
+ * @param {Object} food - The food position with x and y properties.
  * @returns {Array} - An array representing the snake's segments.
  */
-export const generateRandomSnake = (width, height, minimalBoxSize) => {
+export const generateRandomSnake = (width, height, minimalBoxSize, food = {x: -1, y: - 1}) => {
   const margin = minimalBoxSize;
   const maxX = width - 4 * minimalBoxSize - margin; // Leave space for the snake length and margin
   const maxY = height - margin; // Leave space for the margin
-  const x = randomNumberForSnake(margin, maxX, minimalBoxSize);
-  const y = randomNumberForSnake(margin, maxY - minimalBoxSize, minimalBoxSize);
-  return [
-    { x: x + 3 * minimalBoxSize, y: y },
-    { x: x + 2 * minimalBoxSize, y: y },
-    { x: x + minimalBoxSize, y: y },
-    { x: x, y: y },
-  ];
+
+  let snake;
+
+  do {
+    const x = randomNumberForSnake(margin, maxX, minimalBoxSize);
+    const y = randomNumberForSnake(margin, maxY - minimalBoxSize, minimalBoxSize);
+    snake = [
+      { x: x + 3 * minimalBoxSize, y: y },
+      { x: x + 2 * minimalBoxSize, y: y },
+      { x: x + minimalBoxSize, y: y },
+      { x: x, y: y },
+    ];
+  } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+
+  return snake;
 };
 
 /**
