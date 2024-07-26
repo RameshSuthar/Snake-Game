@@ -77,10 +77,12 @@ const GameBoard = ({ rows = 20, columns = 20, minimalBoxSize = 20, numOfGrabs = 
         moveSnake(0, minimalBoxSize, disallowedDirection);
         break;
       case "ArrowLeft":
+        event.preventDefault();
         if (disallowedDirection === "") break;
         moveSnake(-minimalBoxSize, 0, disallowedDirection);
         break;
       case "ArrowRight":
+        event.preventDefault();
         moveSnake(minimalBoxSize, 0, disallowedDirection);
         break;
     }
