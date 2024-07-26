@@ -93,3 +93,29 @@ const randomNumberForSnake = (min, max, step) => {
   const range = Math.floor((max - min) / step);
   return Math.floor(Math.random() * (range + 1)) * step + min;
 };
+
+/**
+ * Checks if the snake's head has hit the boundary of the canvas.
+ * @param {Array} snake - The snake's body.
+ * @param {string} direction - The current direction of the snake.
+ * @param {number} canvasWidth - The width of the canvas.
+ * @param {number} canvasHeight - The height of the canvas.
+ * @param {number} boxSize - The size of each box in the snake.
+ * @returns {boolean} - True if the snake has hit the boundary, false otherwise.
+ */
+export const hasHitBoundary = (snake, direction, canvasWidth, canvasHeight, boxSize) => {
+  const head = snake[0];
+
+  switch (direction) {
+    case 'UP':
+      return head.y < 0;
+    case 'DOWN':
+      return head.y + boxSize > canvasHeight;
+    case 'LEFT':
+      return head.x < 0;
+    case 'RIGHT':
+      return head.x + boxSize > canvasWidth;
+    default:
+      return false;
+  }
+};
